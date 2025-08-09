@@ -2,17 +2,22 @@
   "version": 2,
   "builds": [
     {
-      "src": "index.js",
+      "src": "api/index.js",
       "use": "@vercel/node"
     }
   ],
   "routes": [
     {
+      "src": "/api/(.*)",
+      "dest": "/api"
+    },
+    {
       "src": "/(.*)",
-      "dest": "/"
+      "dest": "/api"
     }
   ],
   "env": {
-    "FRONTEND_URL": "https://canvas-project-silk.vercel.app"
+    "FRONTEND_URL": "https://canvas-project-silk.vercel.app",
+    "NODE_ENV": "production"
   }
 }
