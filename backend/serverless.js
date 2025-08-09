@@ -36,7 +36,7 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-    res.send('Canvas Builder API is running');
+    res.send('Canvas Builder API is running...');
 });
 
 // Global error handler
