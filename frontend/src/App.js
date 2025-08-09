@@ -4,7 +4,7 @@ import ElementForm from './components/ElementForm';
 import axios from 'axios';
 import './App.css'; // Ensure CSS is imported
 
-const API_URL = 'https://canvas-project-hipx.vercel.app';
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
 function App() {
   const [canvasSize, setCanvasSize] = useState({ width: 600, height: 400 });

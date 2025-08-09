@@ -28,6 +28,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// Explicitly mount the routes at both paths to handle potential path issues
 app.use('/api/canvas', canvasRoutes);
 
 // Add a health check endpoint
