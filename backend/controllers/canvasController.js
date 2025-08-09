@@ -6,6 +6,11 @@ const canvasStore = require('../utils/canvasStore');
 
 // Default canvas ID to use
 const DEFAULT_CANVAS_ID = canvasStore.DEFAULT_CANVAS_ID;
+// Determine if we're in a serverless environment
+const isServerless = process.env.VERCEL === '1';
+
+// In-memory image store for serverless environments
+const imageBuffers = {};
 
 exports.createCanvasAPI = (req, res) => {
   try {
@@ -37,6 +42,22 @@ exports.addElementAPI = async (req, res) => {
       return res.status(400).json({ error: 'Canvas not initialized. Please create a canvas first.' });
     }
 
+    let fileData = null;
+    let fileId = null;
+
+    // Handle file upload differently in serverless environment
+    if (file) {
+      if (isServerless && file.buffer) {
+        // In serverless, store in memory
+        fileId = `mem_${Date.now()}_${Math.random().toString(36).substring(7)}`;
+        imageBuffers[fileId] = file.buffer;
+        fileData = { id: fileId, mimetype: file.mimetype };
+      } else {
+        // In local dev, use file path
+        fileData = { path: file.path };
+      }
+    }
+
     const el = {
       type: body.type,
       x: Number(body.x) || 0,
@@ -48,7 +69,7 @@ exports.addElementAPI = async (req, res) => {
       color: body.color || '#000000',
       fontSize: Number(body.fontSize) || 16,
       imageUrl: body.imageUrl || '',
-      filePath: file ? file.path : null,
+      fileData: fileData
     };
 
     if (!el.type) return res.status(400).json({ error: 'type is required' });
@@ -92,10 +113,28 @@ async function redrawAll(canvasData) {
           break;
         case 'image':
           {
-            const source = el.imageUrl || el.filePath;
-            if (!source) break;
-            const imagePath = el.filePath ? path.resolve(el.filePath) : el.imageUrl;
-            const image = await loadImage(imagePath);
+            let image;
+
+            if (el.imageUrl) {
+              // Load from URL
+              image = await loadImage(el.imageUrl);
+            } else if (el.fileData) {
+              if (isServerless && el.fileData.id && imageBuffers[el.fileData.id]) {
+                // Load from in-memory buffer
+                image = await loadImage(imageBuffers[el.fileData.id]);
+              } else if (el.fileData.path) {
+                // Load from file path
+                const imagePath = path.resolve(el.fileData.path);
+                image = await loadImage(imagePath);
+              }
+            } else if (el.filePath) {
+              // Legacy support
+              const imagePath = path.resolve(el.filePath);
+              image = await loadImage(imagePath);
+            }
+
+            if (!image) break;
+
             const w = el.width || image.width;
             const h = el.height || image.height;
             ctx.drawImage(image, el.x, el.y, w, h);

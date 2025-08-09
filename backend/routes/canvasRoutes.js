@@ -1,7 +1,25 @@
 const express = require('express');
 const router = express.Router();
 const multer = require('multer');
-const upload = multer({ dest: 'uploads/' });
+const path = require('path');
+const os = require('os');
+
+// Determine if we're in a serverless environment
+const isServerless = process.env.VERCEL === '1';
+
+// Use memory storage for serverless environments, disk storage for local development
+const storage = isServerless
+    ? multer.memoryStorage()
+    : multer.diskStorage({
+        destination: function (req, file, cb) {
+            cb(null, 'uploads/');
+        },
+        filename: function (req, file, cb) {
+            cb(null, Date.now() + path.extname(file.originalname));
+        }
+    });
+
+const upload = multer({ storage });
 const controller = require('../controllers/canvasController');
 
 router.post('/create', controller.createCanvasAPI);
