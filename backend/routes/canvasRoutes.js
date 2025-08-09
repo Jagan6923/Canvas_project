@@ -20,7 +20,11 @@ const storage = isServerless
     });
 
 const upload = multer({ storage });
-const controller = require('../controllers/canvasController');
+
+// Use different controller based on environment
+const controller = isServerless
+    ? require('../controllers/canvasControllerServerless')
+    : require('../controllers/canvasController');
 
 router.post('/create', controller.createCanvasAPI);
 router.post('/add', upload.single('imageFile'), controller.addElementAPI);

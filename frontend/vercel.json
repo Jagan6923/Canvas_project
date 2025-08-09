@@ -6,6 +6,6 @@
     }
   ],
   "env": {
-    "REACT_APP_API_URL": "https://your-backend-url.vercel.app"
+    "REACT_APP_API_URL": "https://canvas-backend-serverless.vercel.app"
   }
 }
