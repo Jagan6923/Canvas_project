@@ -1,4 +1,5 @@
 // This file routes all API requests to your Express app
-import app from '../serverless';
+const app = require('../serverless');
 
-export default app;
+// Export for Vercel serverless deployment
+module.exports = app;

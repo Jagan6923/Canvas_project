@@ -3,6 +3,11 @@ const express = require('express');
 const cors = require('cors');
 const canvasRoutes = require('./routes/canvasRoutes');
 
+// For Vercel serverless functions, set VERCEL environment variable
+if (process.env.VERCEL_URL) {
+    process.env.VERCEL = '1';
+}
+
 // Create express instance
 const app = express();
 const FRONTEND_URL = process.env.FRONTEND_URL || 'https://canvas-project-silk.vercel.app';
@@ -48,6 +53,9 @@ app.use((err, req, res, next) => {
         stack: process.env.NODE_ENV === 'production' ? undefined : err.stack
     });
 });
+
+// Export the Express app as a serverless function
+module.exports = app;
 
 // Export the Express app as a serverless function
 module.exports = app;
